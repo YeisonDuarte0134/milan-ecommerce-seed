@@ -25,7 +25,9 @@ describe("formatPrice", () => {
 
 describe("extractKeywords", () => {
   it("extracts meaningful words from product name", () => {
-    const keywords = extractKeywords("BICICLETA PROFIT BMX RACING KINGMAN EXPERT");
+    const keywords = extractKeywords(
+      "BICICLETA PROFIT BMX RACING KINGMAN EXPERT",
+    );
     expect(keywords).toContain("BICICLETA");
     expect(keywords).toContain("PROFIT");
     expect(keywords).toContain("BMX");
@@ -40,7 +42,10 @@ describe("extractKeywords", () => {
   });
 
   it("limits to maxWords", () => {
-    const keywords = extractKeywords("BICICLETA PROFIT BMX RACING KINGMAN", 2);
+    const keywords = extractKeywords(
+      "BICICLETA PROFIT BMX RACING KINGMAN",
+      2,
+    );
     expect(keywords).toHaveLength(2);
   });
 
@@ -51,22 +56,24 @@ describe("extractKeywords", () => {
   });
 });
 
-describe("getLatestProducts", () => {
+// Integration tests — require PostgreSQL running
+// Run with: POSTGRES_URL=... pnpm test
+describe("getLatestProducts (integration)", () => {
   it.todo("returns up to N products ordered by create_date DESC");
   it.todo("returns products with id, name, price, formattedPrice");
 });
 
-describe("searchProducts", () => {
+describe("searchProducts (integration)", () => {
   it.todo("finds products matching all search words with ILIKE");
   it.todo("returns empty array for no matches");
 });
 
-describe("getProductById", () => {
+describe("getProductById (integration)", () => {
   it.todo("returns a product when found");
   it.todo("returns null when not found");
 });
 
-describe("getRecommendations", () => {
+describe("getRecommendations (integration)", () => {
   it.todo("returns products with similar name keywords");
   it.todo("excludes the source product from results");
   it.todo("limits results to specified count");

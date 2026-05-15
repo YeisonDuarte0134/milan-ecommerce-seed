@@ -37,30 +37,74 @@ function toProduct(row: { id: number; name: string; list_price: string }): Produ
 }
 
 export async function getLatestProducts(limit = 50): Promise<Product[]> {
-  // TODO: implement — query PostgreSQL for latest products
-  void limit;
-  void pool;
-  return [];
+  const { rows } = await pool.query(
+    `SELECT id, name->>'es_CO' as name, list_price
+     FROM product_template
+     WHERE active = true AND sale_ok = true
+     ORDER BY create_date DESC
+     LIMIT $1`,
+    [limit],
+  );
+  return rows.map(toProduct);
 }
 
 export async function searchProducts(query: string): Promise<Product[]> {
-  // TODO: implement — search products by keywords with ILIKE AND
-  void query;
-  return [];
+  const words = query.trim().split(/\s+/).filter(Boolean);
+  if (words.length === 0) return [];
+
+  const conditions = words.map(
+    (_, i) => `name->>'es_CO' ILIKE $${i + 1}`,
+  );
+  const params = words.map((w) => `%${w}%`);
+
+  const { rows } = await pool.query(
+    `SELECT id, name->>'es_CO' as name, list_price
+     FROM product_template
+     WHERE active = true AND sale_ok = true
+       AND ${conditions.join(" AND ")}
+     ORDER BY create_date DESC
+     LIMIT 50`,
+    params,
+  );
+  return rows.map(toProduct);
 }
 
 export async function getProductById(id: number): Promise<Product | null> {
-  // TODO: implement — fetch single product by id
-  void id;
-  return null;
+  const { rows } = await pool.query(
+    `SELECT id, name->>'es_CO' as name, list_price
+     FROM product_template
+     WHERE id = $1 AND active = true`,
+    [id],
+  );
+  if (rows.length === 0) return null;
+  return toProduct(rows[0]);
 }
 
 export async function getRecommendations(
   productId: number,
   limit = 5,
 ): Promise<Product[]> {
-  // TODO: implement — find products with similar name keywords
-  void productId;
-  void limit;
-  return [];
+  const product = await getProductById(productId);
+  if (!product) return [];
+
+  const keywords = extractKeywords(product.name);
+  if (keywords.length === 0) return [];
+
+  const conditions = keywords.map(
+    (_, i) => `name->>'es_CO' ILIKE $${i + 1}`,
+  );
+  const params: (string | number)[] = keywords.map((w) => `%${w}%`);
+  params.push(productId, limit);
+
+  const { rows } = await pool.query(
+    `SELECT id, name->>'es_CO' as name, list_price
+     FROM product_template
+     WHERE active = true AND sale_ok = true
+       AND (${conditions.join(" OR ")})
+       AND id != $${params.length - 1}
+     ORDER BY create_date DESC
+     LIMIT $${params.length}`,
+    params,
+  );
+  return rows.map(toProduct);
 }
