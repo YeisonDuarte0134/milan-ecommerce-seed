@@ -1,12 +1,11 @@
-// TODO Fase B: login mock por email, sesión en cookie
+import { LoginForm } from "./login-form";
 
 export default function LoginPage() {
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-4">Iniciar sesión</h1>
-      <p className="text-neutral-600">
-        Placeholder — implementar login mock con email.
-      </p>
+      <h1>Iniciar sesion</h1>
+      <p>Ingresa tu correo electronico para continuar.</p>
+      <LoginForm />
     </div>
   );
 }
