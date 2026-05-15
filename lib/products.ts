@@ -37,15 +37,20 @@ function toProduct(row: { id: number; name: string; list_price: string }): Produ
 }
 
 export async function getLatestProducts(limit = 50): Promise<Product[]> {
-  const { rows } = await pool.query(
-    `SELECT id, name->>'es_CO' as name, list_price
-     FROM product_template
-     WHERE active = true AND sale_ok = true
-     ORDER BY create_date DESC
-     LIMIT $1`,
-    [limit],
-  );
-  return rows.map(toProduct);
+  try {
+    const { rows } = await pool.query(
+      `SELECT id, name->>'es_CO' as name, list_price
+       FROM product_template
+       WHERE active = true AND sale_ok = true
+       ORDER BY create_date DESC
+       LIMIT $1`,
+      [limit],
+    );
+    return rows.map(toProduct);
+  } catch (err) {
+    console.error("PostgreSQL connection error:", err);
+    return [];
+  }
 }
 
 export async function searchProducts(query: string): Promise<Product[]> {
@@ -57,27 +62,37 @@ export async function searchProducts(query: string): Promise<Product[]> {
   );
   const params = words.map((w) => `%${w}%`);
 
-  const { rows } = await pool.query(
-    `SELECT id, name->>'es_CO' as name, list_price
-     FROM product_template
-     WHERE active = true AND sale_ok = true
-       AND ${conditions.join(" AND ")}
-     ORDER BY create_date DESC
-     LIMIT 50`,
-    params,
-  );
-  return rows.map(toProduct);
+  try {
+    const { rows } = await pool.query(
+      `SELECT id, name->>'es_CO' as name, list_price
+       FROM product_template
+       WHERE active = true AND sale_ok = true
+         AND ${conditions.join(" AND ")}
+       ORDER BY create_date DESC
+       LIMIT 50`,
+      params,
+    );
+    return rows.map(toProduct);
+  } catch (err) {
+    console.error("PostgreSQL connection error:", err);
+    return [];
+  }
 }
 
 export async function getProductById(id: number): Promise<Product | null> {
-  const { rows } = await pool.query(
-    `SELECT id, name->>'es_CO' as name, list_price
-     FROM product_template
-     WHERE id = $1 AND active = true`,
-    [id],
-  );
-  if (rows.length === 0) return null;
-  return toProduct(rows[0]);
+  try {
+    const { rows } = await pool.query(
+      `SELECT id, name->>'es_CO' as name, list_price
+       FROM product_template
+       WHERE id = $1 AND active = true`,
+      [id],
+    );
+    if (rows.length === 0) return null;
+    return toProduct(rows[0]);
+  } catch (err) {
+    console.error("PostgreSQL connection error:", err);
+    return null;
+  }
 }
 
 export async function getRecommendations(
@@ -96,15 +111,20 @@ export async function getRecommendations(
   const params: (string | number)[] = keywords.map((w) => `%${w}%`);
   params.push(productId, limit);
 
-  const { rows } = await pool.query(
-    `SELECT id, name->>'es_CO' as name, list_price
-     FROM product_template
-     WHERE active = true AND sale_ok = true
-       AND (${conditions.join(" OR ")})
-       AND id != $${params.length - 1}
-     ORDER BY create_date DESC
-     LIMIT $${params.length}`,
-    params,
-  );
-  return rows.map(toProduct);
+  try {
+    const { rows } = await pool.query(
+      `SELECT id, name->>'es_CO' as name, list_price
+       FROM product_template
+       WHERE active = true AND sale_ok = true
+         AND (${conditions.join(" OR ")})
+         AND id != $${params.length - 1}
+       ORDER BY create_date DESC
+       LIMIT $${params.length}`,
+      params,
+    );
+    return rows.map(toProduct);
+  } catch (err) {
+    console.error("PostgreSQL connection error:", err);
+    return [];
+  }
 }
