@@ -1,13 +1,30 @@
-// TODO Fase A: mostrar al menos 1 producto hardcoded con link a /product/[slug]
-// TODO Fase B: implementar grid de productos + buscador server-side
+import Link from "next/link";
+import { getLatestProducts, searchProducts } from "@/lib/products";
 
-export default function HomePage() {
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  const { q } = await searchParams;
+  const products = q ? await searchProducts(q) : await getLatestProducts(50);
+
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-4">Catálogo</h1>
-      <p className="text-neutral-600">
-        Placeholder — implementar grid de productos y buscador.
-      </p>
+      <h1>{q ? `Resultados para "${q}"` : "Ultimos 50 productos"}</h1>
+      {products.length === 0 ? (
+        <p>No se encontraron productos.</p>
+      ) : (
+        <ul>
+          {products.map((p) => (
+            <li key={p.id} style={{ marginBottom: "10px" }}>
+              <Link href={`/product/${p.id}`}>
+                {p.name} — {p.formattedPrice}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
