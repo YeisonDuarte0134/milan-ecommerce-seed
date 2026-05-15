@@ -6,7 +6,7 @@ import { readLocalCart } from "@/lib/cart";
 import type { CartEntry } from "@/lib/cart";
 import { getCartAction } from "@/app/actions/cart";
 import { getSessionAction } from "@/app/actions/auth";
-import { formatPrice } from "@/lib/products";
+import { formatPrice } from "@/lib/formatPrice";
 
 interface CartDisplayItem {
   productId: string;

@@ -1,4 +1,7 @@
 import { pool } from "./pg";
+import { formatPrice } from "./formatPrice";
+
+export { formatPrice };
 
 export interface Product {
   id: number;
@@ -11,13 +14,6 @@ const STOP_WORDS = new Set([
   "PARA", "DE", "EN", "LA", "EL", "CON", "Y", "A",
   "LOS", "LAS", "DEL", "AL", "UN", "UNA", "POR",
 ]);
-
-export function formatPrice(price: number): string {
-  if (price === 0) return "$0";
-  const rounded = Math.round(price);
-  const formatted = rounded.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-  return `$${formatted}`;
-}
 
 export function extractKeywords(name: string, maxWords = 3): string[] {
   return name
